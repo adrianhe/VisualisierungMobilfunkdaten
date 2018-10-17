@@ -28,8 +28,8 @@ class Data {
   void checkConverted() { // Wurden die Datensätze schon einmal verarbeitet?
     gpsUrl = new Boolean[fileCount]; // Speichert Antwort darauf
     for (int id=0; id < fileCount; id++) { // Jeden Datensatz durchlaufen
-      if (data[id].getColumnCount() >= 11) { // Hat die Tabelle 9 oder mehr Spalten?
-        gpsUrl[id] = (data[id].getColumnTitle(9).equals("Breitengrad") && data[id].getColumnTitle(10).equals("Längengrad")); // Wenn die Bezeichnung der 8. und 9. Spalte stimmen, wurde die Datei schon verarbeitet
+      if (data[id].getColumnCount() >= 12) { // Hat die Tabelle 12 oder mehr Spalten?
+        gpsUrl[id] = (data[id].getColumnTitle(10).equals("Breitengrad") && data[id].getColumnTitle(11).equals("Längengrad")); // Wenn die Bezeichnung der 11. und 12. Spalten stimmen, wurde die Datei schon verarbeitet
       } else gpsUrl[id] = false; // Ansonsten wurde die Datei noch nicht verarbeitet
     }
 
@@ -72,8 +72,6 @@ class Data {
           
 
           boolean insertCell = true; // Standardmäßig davon ausgehen, dass die Funkzelle noch in die Hilfstabelle eiongefügt werden muss
-          
-          if (t_cellID.equals("2147483647")) insertCell = false;  // 32 Bit Int Grenze -> Fehler
 
           for (TableRow cellRow : getGPSTable.matchRows(t_cellID, "CellID")) { // Jede Zeile der Hilfstabelle betrachten, wo die CellID übereinstimmt
             // Wenn auch LAC, Radio, PSC und Signalstärke übereinstimmen
@@ -128,7 +126,7 @@ class Data {
       psc = getGPSTable.getString(id, 5);
       signal = getGPSTable.getString(id, 6);
       // Webanfrage, um die Koordinaten der Funkzelle zu erhalten 
-      if (!mcc.equals("ERROR") || !mnc.equals("ERROR") || !radio.equals("ERROR") || !cellID.equals("ERROR") || !lac.equals("ERROR")) { // CellID und LAC müssen vorhanden sein
+      if (!mcc.equals("ERROR") && !mnc.equals("ERROR") && !radio.equals("ERROR") && !cellID.equals("ERROR") && !cellID.equals("-1") && !cellID.equals("2147483647") && !lac.equals("ERROR")) { // CellID und LAC müssen vorhanden sein
 
         // HTTP Verbindung für Webanfrage
         HttpURLConnection conn = null;
@@ -194,8 +192,8 @@ class Data {
               //jsonResponse.getString("accurancy");
               //jsonResponse.getString("balance");
             }
-            getGPSTable.setString(id, 4, lat); // Breiten- und Längengrad in Hilfstabelle einfügen
-            getGPSTable.setString(id, 5, lon);
+            getGPSTable.setString(id, 7, lat); // Breiten- und Längengrad in Hilfstabelle einfügen
+            getGPSTable.setString(id, 8, lon);
           }
           catch (IOException e) {
           }
@@ -211,8 +209,8 @@ class Data {
             conn.disconnect();
         }
       } else {
-        getGPSTable.setString(id, 4, "CELL ERROR"); // Breiten- und Längengrad in Hilfstabelle einfügen
-        getGPSTable.setString(id, 5, "CELL ERROR");
+        getGPSTable.setString(id, 7, "CELL ERROR"); // Breiten- und Längengrad in Hilfstabelle einfügen
+        getGPSTable.setString(id, 8, "CELL ERROR");
       }
     }
     // Statusmeldung anzeigen, wenn Koordinaten geladen wurden (und es etwas zu laden gab)
@@ -233,14 +231,17 @@ class Data {
         for (int k =0; k < data[id].getRowCount(); k++) { // Jede Zeile des aktuellen Datensatzes mit GPS Koordinaten erweitern
           String t_mcc = data[id].getString(k, 3); // MCC, MNC, LAC und CellID der Zeile temporär speichern
           String t_mnc = data[id].getString(k, 4);
-          String t_lac = data[id].getString(k, 5);
-          String t_cellID = data[id].getString(k, 6);
+          String t_radio = data[id].getString(k, 5);
+          String t_lac = data[id].getString(k, 6);
+          String t_cellID = data[id].getString(k, 7);
+          String t_psc = data[id].getString(k, 8);
+          String t_signal = data[id].getString(k, 9);
 
           for (TableRow cellRow : getGPSTable.matchRows(t_cellID, "CellID")) { // Wähle korrekte Zeille in Hilfstabelle, in der die CellID übereinstimmt
-            // Wenn auch die LAC, MNC und MCC übereinstimmt
-            if (cellRow.getString("lac").equals(t_lac) && cellRow.getString("mnc").equals(t_mnc) && cellRow.getString("mcc").equals(t_mcc)) {
-              data[id].setString(k, 7, cellRow.getString("lat")); //Breiten- und Längengrad zur Tabelle hinzufügen
-              data[id].setString(k, 8, cellRow.getString("lon"));
+            // Wenn auch die die weiteren Daten übereinstimmen
+            if (cellRow.getString("lac").equals(t_lac) && cellRow.getString("mcc").equals(t_mcc) && cellRow.getString("mnc").equals(t_mnc) && cellRow.getString("radio").equals(t_radio) && cellRow.getString("psc").equals(t_psc) && cellRow.getString("signal").equals(t_signal)) {
+              data[id].setString(k, 10, cellRow.getString("lat")); //Breiten- und Längengrad zur Tabelle hinzufügen
+              data[id].setString(k, 11, cellRow.getString("lon"));
               break; // for-Schleife beenden
             }
           }

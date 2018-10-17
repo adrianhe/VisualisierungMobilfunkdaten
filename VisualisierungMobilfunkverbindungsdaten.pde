@@ -32,8 +32,8 @@ String APIToken = "xx-xx-xx-xx-xx"; // Auf https://unwiredlabs.com/trial beantra
 boolean filterDate = false; // Filter an: true; Filter aus: false
 
 // Zeitspanne (von - bis) der Visualisierung, wenn Datumsfilter aktiviert ist
-String beginnDate = "01.01.2018 15:00:00"; // Im Format "dd.MM.yyyy HH:mm:ss"
-String endDate = "31.12.2018 00:00:00"; // Im Format "dd.MM.yyyy HH:mm:ss"
+String beginnDate = "01.06.2018 15:00:00"; // Im Format "dd.MM.yyyy HH:mm:ss"
+String endDate = "01.06.2019 00:00:00"; // Im Format "dd.MM.yyyy HH:mm:ss"
 
 // Tagesfilter zur Anzeige der Daten
 boolean filterDays = false; // Filter an: true; Filter aus: false
@@ -238,13 +238,13 @@ void fileSelected(File selection) {
     }
 
     // Stimmt die Header Zeile?
-    String[] compare = {"Datum und Uhrzeit", "Dienst", "Richtung", "MCC", "MNC", "LAC", "CellID"};
+    String[] compare = {"Datum und Uhrzeit", "Dienst", "Richtung", "MCC", "MNC", "Radio", "LAC", "CellID", "PSC", "Signal"};
     try {
       TableRow tempRow = loadTable(path).getRow(0); // Header laden und vergleichen
       for (int i=0; i<compare.length; i++) { // Jede Spalte überprüfen
         if (!trim(tempRow.getString(i)).equals(compare[i])) { // Evtl. überflüssige Leerzeichen entfernen
           correctInput = false;
-          errorMessage += "Fehlerhafter Header. Die Tabelle muss dem Format: 'Datum und Uhrzeit,Dienst,Richtung,MCC,MNC,LAC,CellID' entsprechen. Dementsprechend muss der Header aussehen.\n";
+          errorMessage += "Fehlerhafter Header. Die Tabelle muss dem Format: 'Datum und Uhrzeit,Dienst,Richtung,MCC,MNC,Radio,LAC,CellID,PSC,Signal' entsprechen.\n";
           break;
         }
       }
@@ -283,8 +283,6 @@ void fileSelected(File selection) {
 
     if (fileCount > 0) {
 
-      //TODO to test
-
       Data data = new Data(url, fileCount); // Objekt der Klasse Data anlegen
       Table[] queriedData = data.startTransition();
 
@@ -292,6 +290,7 @@ void fileSelected(File selection) {
       for (int id=0; id < fileCount; id++) { // Jeden Datensatz durchlaufen
         hasData = (hasData || (queriedData[id].getRowCount() > 0));
       }
+
       if (hasData) makeTrackpoints(queriedData); // Wegpunkte aus dem Ergebnis der Transformation der Datensätze erstellen
       else {
         println("Es können keine Datensätze angezeigt werden. Starte das Programm erneut.");
@@ -309,6 +308,7 @@ void fileSelected(File selection) {
 /* ################################# */
 
 void makeTrackpoints(Table[] data) { // Wegpunkte aus Tabellen erstellen
+
   lastTrackpoints = new Trackpoint[fileCount]; // Sammlung der jeweils letzten Wegpunkte für jeden Datensatz
   int sumTrackpoints = 0; // Anzahl aller Wegpunkte zu Beginn auf 0 setzen
 
@@ -341,24 +341,24 @@ void makeTrackpoints(Table[] data) { // Wegpunkte aus Tabellen erstellen
     smsCounter.set(id, 0);
     dataCounter.set(id, 0);
     errorCounter.set(id, 0);
-
     for (int k =0; k < data[id].getRowCount(); k++) { // Jede Zeile des Datensatzes durchgehen
+    println("anzahl zeilen: "+data[id].getRowCount());
+    println("zeile "+k);
       // Gab es Fehler beim Laden der Koordinaten der aktuellen Funkzelle?
       if ((data[id].getString(k, "Breitengrad").equals("QUERY ERROR")) || (data[id].getString(k, "Längengrad").equals("QUERY ERROR")) || (data[id].getString(k, "Breitengrad").equals("CELL ERROR")) || (data[id].getString(k, "Längengrad").equals("CELL ERROR"))) {
         errorCounter.increment(id); // Fehlerzähler um 1 erhöhen
       } else { //Ansonsten neuen Trackpoint für jede Zeile erzeugen mit: Datum und Uhrzeit | Dienst | Richtung | Breitengrad | Längengrad | Datensatz-ID            
         Trackpoint t = new Trackpoint (data[id].getString(k, "Datum und Uhrzeit"), data[id].getString(k, "Dienst"), data[id].getString(k, "Richtung"), data[id].getString(k, "Breitengrad"), data[id].getString(k, "Längengrad"), id); 
         // Auswahl je nach aktiviertem Filter vornehmen
-
         // Datumsfilter beachten, wenn aktiviert
         if (!filterDate || t.time.after(startOfSet) && t.time.before(endOfSet)) {
-
           // Tagesfilter beachten, wenn aktiviert
           if (!filterDays || checkDay(days, t.time.get(Calendar.DAY_OF_WEEK))) {
 
             // Falls Stundenfilter deaktiviert 
             if (!filterHours) {
               trackpoints.get(id).add(t); // Aktuellen Trackpoint zur globalen Liste zur Anzeige für den jeweiligen Datensatz hinzufügen
+println("Added trackpoint no. "+k);              
             } else {
               if (beginHour > endHour) {  // Der Beginn des Stundenfilters liegt nach dem Ende
                 // Vergleiche entsprechend die Stunde des Trackpoints mit denen des Stundenfilters
@@ -369,22 +369,21 @@ void makeTrackpoints(Table[] data) { // Wegpunkte aus Tabellen erstellen
                 // Vergleiche die Stunde des Trackpoints mit denen des Stundenfilters
                 if (t.time.get(Calendar.HOUR_OF_DAY) >= beginHour && t.time.get(Calendar.HOUR_OF_DAY) < endHour) {
                   trackpoints.get(id).add(t); // Aktuellen Trackpoint zur globalen Liste zur Anzeige für den jeweiligen Datensatz hinzufügen
-                }
+                }                
               }
             }
           }
         }
       }
     }
+    println("Point A");
     // Wenn mindestens ein Wegpunkt angezeigt wird, Letzten Wegpunkt für Verbindungslinie auf ersten Wegpunkt setzen
     if (trackpoints.get(id).size() > 0) lastTrackpoints[id] = trackpoints.get(id).get(0);
-
+        println("Point B");
     // Wenn es Fehler beim Laden der Koordinaten für bestimmte Funkzellen gab, Anzahl der Fehler anzeigen
     if (errorCounter.get(id) > 0) println("Der "+(id+1)+". Datensatz hat "+errorCounter.get(id)+" Verbindungen, für die die Koordinaten der Funkzelle nicht geladen werden konnten.");
-
     sumTrackpoints = sumTrackpoints + trackpoints.get(id).size();  // Anzahl aller Wegpunkte um die Anzahl der Wegpunkte des jeweiligen Datensatzes erhöhen
   }
-
   // Fehlermeldung anzeigen, wenn keine Wegpunkte angezeigt werden würden
   if (sumTrackpoints <= 0) {
     println("Error: Keine Trackpoints gefunden. Das könnte daran liegen, dass die Filter falsch eingestellt wurden. Starte das Programm erneut.");
@@ -403,7 +402,7 @@ void makeTrackpoints(Table[] data) { // Wegpunkte aus Tabellen erstellen
       catch(ParseException e) { // Einlesefehler abfangen
         e.printStackTrace();
       }
-
+      
       for (int id=0; id < fileCount; id++) { // Jeden Datensatz durchlaufen
         if (trackpoints.get(id).size() > 0) {
           // Startzeit auf frühesten Wegpunktes setzen
@@ -411,7 +410,6 @@ void makeTrackpoints(Table[] data) { // Wegpunkte aus Tabellen erstellen
         }
       }
       endTime = (Calendar) startTime.clone(); // Ende auf Startzeit setzen, um bei folgenden Vergleichen immer früher zu sein
-
       for (int id=0; id < fileCount; id++) { // Jeden Datensatz durchlaufen
         if (trackpoints.get(id).size() > 0) {
           // Ende der Wiedergabe auf Zeit des letzten Wegpunktes setzen
