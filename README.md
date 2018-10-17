@@ -19,9 +19,9 @@
 * Grafikkarte die eine aktuelle Version von OpenGL unterstützt
 Ansonsten die Zeile "size(windowWidth, windowHeight, P2D);" in 
 "size(windowWidth, windowHeight, FX2D);" ändern
-
-
 * Arbeitsspeicher von mindestens 2 GB RAM empfohlen
+* Internetverbindung zum Herunterladen der GPS-Koordinaten der Funkzellen
+* Unwired Labs API-Key zum Abrufen von GPS-Koordinaten für eigene Datensätze (https://unwiredlabs.com/trial)
 
 
 ##### INFO #####
