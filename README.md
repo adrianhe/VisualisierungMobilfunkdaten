@@ -19,9 +19,9 @@
 * Grafikkarte die eine aktuelle Version von OpenGL unterstützt
 Ansonsten die Zeile "size(windowWidth, windowHeight, P2D);" in 
 "size(windowWidth, windowHeight, FX2D);" ändern
-
-
 * Arbeitsspeicher von mindestens 2 GB RAM empfohlen
+* Internetverbindung zum Herunterladen der GPS-Koordinaten der Funkzellen
+* Unwired Labs API-Key zum Abrufen von GPS-Koordinaten für eigene Datensätze (https://unwiredlabs.com/trial)
 
 
 ##### INFO #####
@@ -49,9 +49,8 @@ Veröffentlicht unter CC BY 3.0 Lizenz
 * OpenCellID – http://opencellid.org/
 Veröffentlicht unter CC-BY-SA 3.0 Lizenz
 
-* REST-API von S. Kasberger – http://kasi.berlin:8888/TowerAPI/
-Private Nutzungsvereinbarung
-Bei Problemen mit der API E-Mail an: towertracker@kasi.berlin
+* Unwired Labs' LocationAPI – https://unwiredlabs.com/
+Eigene Nutzungsverordnung
 
 
 ###### KONTAKT ######
