@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  ***************************************************************************************/
 
 //API Key zum Herunterladen der Geodaten eigener Datensätze hier eintragen
-String APIToken = "xx-xx-xx-xx-xx"; // Auf https://unwiredlabs.com/trial beantragen
+//String APIToken = "xx-xx-xx-xx-xx"; // Auf https://unwiredlabs.com/trial beantragen
 
 /*Interaktion mit der Software:
  
@@ -342,8 +342,6 @@ void makeTrackpoints(Table[] data) { // Wegpunkte aus Tabellen erstellen
     dataCounter.set(id, 0);
     errorCounter.set(id, 0);
     for (int k =0; k < data[id].getRowCount(); k++) { // Jede Zeile des Datensatzes durchgehen
-    println("anzahl zeilen: "+data[id].getRowCount());
-    println("zeile "+k);
       // Gab es Fehler beim Laden der Koordinaten der aktuellen Funkzelle?
       if ((data[id].getString(k, "Breitengrad").equals("QUERY ERROR")) || (data[id].getString(k, "Längengrad").equals("QUERY ERROR")) || (data[id].getString(k, "Breitengrad").equals("CELL ERROR")) || (data[id].getString(k, "Längengrad").equals("CELL ERROR"))) {
         errorCounter.increment(id); // Fehlerzähler um 1 erhöhen
@@ -357,8 +355,7 @@ void makeTrackpoints(Table[] data) { // Wegpunkte aus Tabellen erstellen
 
             // Falls Stundenfilter deaktiviert 
             if (!filterHours) {
-              trackpoints.get(id).add(t); // Aktuellen Trackpoint zur globalen Liste zur Anzeige für den jeweiligen Datensatz hinzufügen
-println("Added trackpoint no. "+k);              
+              trackpoints.get(id).add(t); // Aktuellen Trackpoint zur globalen Liste zur Anzeige für den jeweiligen Datensatz hinzufügen              
             } else {
               if (beginHour > endHour) {  // Der Beginn des Stundenfilters liegt nach dem Ende
                 // Vergleiche entsprechend die Stunde des Trackpoints mit denen des Stundenfilters
@@ -376,10 +373,8 @@ println("Added trackpoint no. "+k);
         }
       }
     }
-    println("Point A");
     // Wenn mindestens ein Wegpunkt angezeigt wird, Letzten Wegpunkt für Verbindungslinie auf ersten Wegpunkt setzen
     if (trackpoints.get(id).size() > 0) lastTrackpoints[id] = trackpoints.get(id).get(0);
-        println("Point B");
     // Wenn es Fehler beim Laden der Koordinaten für bestimmte Funkzellen gab, Anzahl der Fehler anzeigen
     if (errorCounter.get(id) > 0) println("Der "+(id+1)+". Datensatz hat "+errorCounter.get(id)+" Verbindungen, für die die Koordinaten der Funkzelle nicht geladen werden konnten.");
     sumTrackpoints = sumTrackpoints + trackpoints.get(id).size();  // Anzahl aller Wegpunkte um die Anzahl der Wegpunkte des jeweiligen Datensatzes erhöhen
