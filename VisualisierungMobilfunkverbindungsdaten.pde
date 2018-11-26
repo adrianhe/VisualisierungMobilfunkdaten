@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  ***************************************************************************************/
 
 //API Key zum Herunterladen der Geodaten eigener Datensätze hier eintragen
-//String APIToken = "xx-xx-xx-xx-xx"; // Auf https://unwiredlabs.com/trial beantragen
+String APIToken = "xx-xx-xx-xx-xx"; // Auf https://unwiredlabs.com/trial beantragen
 
 /*Interaktion mit der Software:
  
